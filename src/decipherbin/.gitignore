@@ -1,0 +1,5 @@
+decipherment-apply
+decipherment-learn
+fsts-rescore
+transcripts-to-fsts
+lattices-to-phone-fsts
