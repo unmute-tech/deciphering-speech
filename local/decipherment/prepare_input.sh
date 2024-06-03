@@ -34,6 +34,9 @@ if [ ! -z $num_minutes ]; then
   sort $phone_decode_dir/phones.txt | \
     join - $dir/train_utts | \
     utils/sym2int.pl -f 2- $lang_dir/phones.txt | \
+    awk '{print NF - 1, $0}' | \
+    sort -k 1,1nr | \
+    cut -f 2- -d ' ' | \
     transcripts-to-fsts ark,t:- ark,scp:$dir/input.ark,$dir/input.scp
 else
   utils/sym2int.pl -f 2- $lang_dir/phones.txt $phone_decode_dir/phones.txt | \

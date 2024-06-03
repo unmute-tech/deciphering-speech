@@ -90,13 +90,23 @@ int main(int argc, char *argv[]) {
 
     SequentialTableReader<fst::VectorFstHolder> source_reader(source_rspecifier);
     std::vector<std::vector<fst::VectorFst<fst::LogArc>>> observation_per_job(num_threads);
+    std::vector<int> cost_per_job(num_threads);
     int i = 0;
     for (; !source_reader.Done(); source_reader.Next()) {
       const std::string key = source_reader.Key();
       fst::VectorFst<fst::LogArc> observation_fst;
       fst::Cast(source_reader.Value(), &observation_fst);
       fst::ArcSort(&observation_fst, fst::OLabelCompare<fst::LogArc>());
-      observation_per_job[i++ % num_threads].push_back(observation_fst);
+
+      int job = 0;
+      for (int i = 1; i < num_threads; i++) {
+        if (cost_per_job[i] < cost_per_job[job]) {
+          job = i;
+	}
+      }
+
+      observation_per_job[job].push_back(observation_fst);
+      cost_per_job[job] += fst::NumArcs(observation_fst);
     }
 
     fst::StdVectorFst *lex_fst = fst::ReadFstKaldi(lex_fst_filename);
