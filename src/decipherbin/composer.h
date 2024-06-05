@@ -68,6 +68,7 @@ class StandardComposer: public Composer<Arc> {
 
     StateTable* Compose(const Fst &fst1, const Fst &fst2, Fst *ofst) const {
       ComposeFstOptions opts;
+      opts.gc_limit = 0;
       opts.own_state_table = false;
       opts.state_table = new StateTable(fst1, fst2);
       *ofst = ComposeFst(fst1, fst2, opts);
@@ -134,6 +135,7 @@ class ThreewayComposer: public Composer<Arc> {
 
     StateTable* Compose(const fst::StdVectorFst &fst1, const fst::StdVectorFst &fst2, fst::StdVectorFst *ofst) const {
       ComposeFstOptions opts;
+      opts.gc_limit = 0;
       opts.own_state_table = false;
       opts.state_table = new StateTable(fst1, fst2);
       *ofst = ComposeFst(fst1, fst2, opts);
