@@ -22,11 +22,11 @@ KALDI_ROOT=$PWD/../kaldi bash install.sh
 
 Finally, we need to install PyKaldi and S3PRL for extracting features with XLS-R.
 ```
-conda create -y --name deciphering-speech python=3.7
+conda create -y --name deciphering-speech python=3.9
 conda activate deciphering-speech
-conda install -y -c pykaldi pykaldi
 conda install -y -c pytorch -c nvidia pytorch torchvision torchaudio pytorch-cuda=11.8
-pip install s3prl click
+conda install -y -c kaldi_native_io kaldi_native_io
+pip install s3prl click nltk soundfile
 ```
 
 ## Deciphering new language

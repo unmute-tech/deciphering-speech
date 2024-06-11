@@ -12,30 +12,8 @@ import click
 from s3prl.util.download import set_dir
 from s3prl.nn import S3PRLUpstream
 
-from kaldi.matrix import Matrix
-from kaldi.matrix.compressed import CompressedMatrix
-from kaldi.util.table import _WriterBase, _kaldi_table, SequentialWaveReader
-
+from kaldi_native_io import SequentialWaveReader, CompressedMatrixWriter, CompressionMethod
 from multiprocessing import Process, JoinableQueue
-
-class CompressedMatrixWriter(_WriterBase, _kaldi_table.CompressedMatrixWriter):
-    """Table writer for CompressedMatrix."""
-    def write(self, key, value):
-        """Writes the `(key, value)` pair to the table.
-
-        This method is provided for compatibility with the C++ API only;
-        most users should use the Pythonic API.
-
-        Overrides write to accept both CompressedMatrix
-
-        Args:
-            key (str): The key.
-            value: The value.
-        """
-        if not isinstance(value, CompressedMatrix):
-            raise ValueError("value needs to be a CompressedMatrix")
-        super(CompressedMatrixWriter, self).write(key, value)
-
 
 def writer_process(q, output_wspecifier):
     with CompressedMatrixWriter(output_wspecifier) as writer:
@@ -45,7 +23,7 @@ def writer_process(q, output_wspecifier):
                 break
 
             name, features = val
-            writer[name] = CompressedMatrix.new(Matrix(features))
+            writer.write(name, features, CompressionMethod.kAutomaticMethod)
             q.task_done()
 
         q.task_done()
@@ -69,7 +47,7 @@ def main(model_name, input_rspecifier, output_wspecifier, layer, job):
         p.start()
 
         for name, wav in reader:
-            wav = wav.data()[0]
+            wav = wav.data.numpy()[0]
 
             chunks = []
             chunk_length = 40
