@@ -34,6 +34,7 @@ Given a folder `wavs` with audio files and language iso code and script, we can 
 ```
 ./run.sh <lang-iso> <script> <wavs> <work-dir>
 ```
+By default this script uses 40 CPUs and around 64-128GB RAM depending on the language. It also uses 4 GPUs for XLS-R feature extraction.
 
 ## Citation
 For research using this work, please cite:
