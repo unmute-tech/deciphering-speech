@@ -18,9 +18,11 @@ int main(int argc, char *argv[]) {
 
     BaseFloat acoustic_scale = 0.1;
     BaseFloat lm_scale = 1.0;
+    BaseFloat sausage_mass_threshold = 0.9;
     
     po.Register("acoustic-scale", &acoustic_scale, "Scaling factor for acoustic likelihoods");
     po.Register("lm-scale", &lm_scale, "Scaling factor for graph/lm costs");
+    po.Register("sausage-mass-threshold", &sausage_mass_threshold, "Sausage mass threshold");
     
     MinimumBayesRiskOptions mbr_opts;
     mbr_opts.Register(&po);
@@ -61,9 +63,15 @@ int main(int argc, char *argv[]) {
         fst.AddState();
         last_state++;
 
+        float sum = 0;
         for (const auto &arc: sausage) {
           fst::StdArc::Weight weight(-log(arc.second));
           fst.AddArc(last_state - 1, fst::StdArc(arc.first, arc.first, weight, last_state));
+
+          sum += arc.second;
+          if (sum >= sausage_mass_threshold) {
+            break;
+          }
         }
       }
       fst.SetFinal(last_state, 0);

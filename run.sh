@@ -5,6 +5,7 @@ stage=0
 nj=40
 num_minutes=20
 num_restarts=50
+use_sausages=false
 # End configuration section.
 
 echo "$0 $@"  # Print the command line for logging
@@ -21,6 +22,7 @@ if [ $# != 4 ]; then
    echo "  --nj <nj>                                # number of parallel jobs"
    echo "  --num-minutes <num_minutes>              # amount of data for decipherment training"
    echo "  --num-restarts <num-restarts>            # number of random restarts"
+   echo "  --use-sausages <true|false>              # use sausages for decoding (default: false)"
    exit 1;
 fi
 
@@ -68,6 +70,7 @@ if [ $stage -le 3 ]; then
   echo "Decoding the input data with the decipherment model"
 
   local/decipherment/prepare_input.sh \
+    --use-sausages $use_sausages \
     $phone_decode_dir $src_lang_dir $decode_dir
 
   local/decipherment/decode.sh --nj $nj \

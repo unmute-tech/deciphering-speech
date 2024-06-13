@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
     for (; !source_reader.Done(); source_reader.Next()) {
       const std::string key = source_reader.Key();
       fst::StdVectorFst observation_fst(source_reader.Value());
+      fst::ArcSort(&observation_fst, fst::OLabelCompare<fst::StdArc>());
 
       ThreeWayComposition<fst::StdArc> tc(observation_fst, la_fst, *lm_fst, steps_threshold, prune_beam, -1);
       fst::StdVectorFst deciphered_fst = tc.GetFst();
