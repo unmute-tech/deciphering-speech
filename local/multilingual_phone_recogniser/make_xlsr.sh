@@ -61,6 +61,15 @@ for f in $required; do
   fi
 done
 
+num_gpus=`echo $CUDA_VISIBLE_DEVICES | awk -F, '{print NF}'`
+if [ $num_gpus -eq 0 ]; then
+  nj=$((nj/4))
+  device=cpu
+else
+  nj=$num_gpus
+  device=cuda:JOB
+fi
+
 utils/validate_data_dir.sh --no-text --no-feats $data || exit 1;
 write_num_frames_opt="--write-num-frames=ark,t:$logdir/utt2num_frames.JOB"
 
@@ -77,10 +86,10 @@ if [ -f $data/segments ]; then
 
   $cmd JOB=1:$nj $logdir/make_feat_${name}.JOB.log \
     extract-segments scp,p:$scp $logdir/segments.JOB ark:- \| \
-    python3 local/multilingual_phone_recogniser/make_xlsr.py \
+    MKL_NUM_THREADS=4 python3 local/multilingual_phone_recogniser/make_xlsr.py \
       --model_name=$model \
       --layer=$layer \
-      --job=JOB \
+      --device=$device \
       --input_rspecifier=ark:- --output_wspecifier=ark:- \| \
     copy-feats --compress=$compress $write_num_frames_opt ark:- ark,scp:$featdir/raw_feat_$name.JOB.ark,$featdir/raw_feat_$name.JOB.scp || exit 1;
 else
@@ -97,10 +106,10 @@ else
   # utterances that have bad wave data.
 
   $cmd JOB=1:$nj $logdir/make_feat_${name}.JOB.log \
-    python3 local/multilingual_phone_recogniser/make_xlsr.py \
+    MKL_NUM_THREADS=4 python3 local/multilingual_phone_recogniser/make_xlsr.py \
       --model_name=$model \
       --layer=$layer \
-      --job=JOB \
+      --device=$device \
       --input_rspecifier=scp,p:$logdir/wav_${name}.JOB.scp --output_wspecifier=ark:- \| \
     copy-feats $write_num_frames_opt --compress=$compress ark:- ark,scp:$featdir/raw_feat_$name.JOB.ark,$featdir/raw_feat_$name.JOB.scp || exit 1;
 fi

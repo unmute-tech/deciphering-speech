@@ -45,7 +45,7 @@ if [ $stage -le 0 ]; then
 fi
 
 if [ $stage -le 1 ]; then
-  local/multilingual_phone_recogniser/make_xlsr.sh --nj 4 --model xls_r_300m --layer 18 $data_dir
+  local/multilingual_phone_recogniser/make_xlsr.sh --nj $nj --model xls_r_300m --layer 18 $data_dir
   steps/compute_cmvn_stats.sh $data_dir
 fi
 

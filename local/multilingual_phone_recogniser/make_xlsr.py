@@ -15,9 +15,8 @@ from kaldi_native_io import SequentialWaveReader, CompressedMatrixWriter, Compre
 @click.option('--input_rspecifier', type=str, help='Input rspecifier')
 @click.option('--output_wspecifier', type=str, help='Output wspecifier')
 @click.option('--layer', type=int, help='Output layer')
-@click.option('--job', type=int, help='Job ID')
-def main(model_name, input_rspecifier, output_wspecifier, layer, job):
-  device = f'cuda:{job-1}'
+@click.option('--device', type=str, help='Device')
+def main(model_name, input_rspecifier, output_wspecifier, layer, device):
   print(f'Using {device} with input {input_rspecifier} output {output_wspecifier}', file=sys.stderr)
   set_dir("./s3prl_download")
   model = S3PRLUpstream(model_name, "ckpts").to(device)
@@ -30,6 +29,7 @@ def main(model_name, input_rspecifier, output_wspecifier, layer, job):
 
       chunks = []
       chunk_length = 40
+      print(f'Extracting feats for {name} with length {wav.shape[0] / 16000:.1f}s', file=sys.stderr)
       for start in range(0, wav.shape[0], chunk_length * 16000):
         with torch.no_grad():
           chunk = torch.FloatTensor(wav[start:start + chunk_length * 16000]).view(1, -1).to(device)
