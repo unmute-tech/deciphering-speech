@@ -7,7 +7,7 @@ First, we need to compile [Kaldi](https://github.com/kaldi-asr/kaldi)
 ```
 git clone https://github.com/kaldi-asr/kaldi.git
 cd kaldi/tools
-make -j 8 && ./extras/install_srilm.sh && ./extras/install_tcmalloc.sh
+make -j 8 OPENFST_VERSION=1.7.2 && ./extras/install_srilm.sh && ./extras/install_tcmalloc.sh
 cd ../src
 ./configure --use-cuda=yes --enable-tcmalloc && make depend -j 8 && make -j 8
 cd ../..
