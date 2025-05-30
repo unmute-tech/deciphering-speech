@@ -54,12 +54,27 @@ if [ $stage -le 2 ]; then
     --nj $((nj/4)) --num-threads 4 \
     --skip-scoring true --skip-diagnostics true \
     $graph_dir $data_dir $decode_dir || exit 1;
+fi
 
+if [ $stage -le 3 ]; then
   lattice-scale --inv-acoustic-scale=10 "ark:gunzip -c $decode_dir/lat.*.gz|" ark:- 2> /dev/null | \
     lattice-best-path ark:- ark:/dev/null ark:- 2> /dev/null | \
     ali-to-phones $nnet_dir/final.mdl ark:- ark,t:- | \
     utils/int2sym.pl -f 2- $graph_dir/phones.txt | \
     sed 's/oU/o u/g;s/aI/a i/g;s/eI/e i/g'> $decode_dir/phones.txt
 
-  mv $decode_dir $phone_decode_dir
+  lattice-1best --lm-scale=10 "ark:gunzip -c $decode_dir/lat.*.gz|" ark:- | \
+    lattice-align-words-lexicon $graph_dir/phones/align_lexicon.int $nnet_dir/final.mdl ark:- ark:- | \
+    lattice-1best ark:- ark:- | \
+    nbest-to-ctm --frame-shift=0.02 --print-silence=true ark:- - | \
+    utils/int2sym.pl -f 5 $graph_dir/words.txt > $decode_dir/phones.ctm
+
+  less $decode_dir/phones.ctm
 fi
+
+if [ -d $phone_decode_dir ]; then
+  echo "$phone_decode_dir already exists, putting it into $phone_decode_dir/.backup"
+  mv $phone_decode_dir $decode_dir/.backup
+fi
+
+mv $decode_dir $phone_decode_dir
