@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
 
   for f in $input_dir/*.wav; do
     name=`basename $f .wav`
-    echo "$name sox -t wav $f -c 1 -b 16 -t wav - rate 16000 |" >> $data_dir/wav.scp
+    echo "$name sox -R -t wav $f -c 1 -b 16 -t wav - rate 16000 |" >> $data_dir/wav.scp
     echo "$name" >> $data_dir/text
     echo "$name $name" >> $data_dir/utt2spk
     echo "$name $name" >> $data_dir/spk2utt
